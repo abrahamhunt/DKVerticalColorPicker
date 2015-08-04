@@ -32,4 +32,8 @@
     self.sampleView.backgroundColor = color;
 }
 
+- (IBAction)typeChanged:(UISegmentedControl *)sender {
+    self.vertPicker.pickerType = sender.selectedSegmentIndex;
+}
+
 @end

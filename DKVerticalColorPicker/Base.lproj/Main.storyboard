@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="6254" systemVersion="14B25" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="vXZ-lx-hvc">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="7706" systemVersion="14E46" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="vXZ-lx-hvc">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6247"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7703"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <scenes>
@@ -28,6 +28,9 @@
                                     <userDefinedRuntimeAttribute type="color" keyPath="selectedColor">
                                         <color key="value" name="alternateSelectedControlColor" catalog="System" colorSpace="catalog"/>
                                     </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="pickerType">
+                                        <integer key="value" value="0"/>
+                                    </userDefinedRuntimeAttribute>
                                 </userDefinedRuntimeAttributes>
                                 <connections>
                                     <outlet property="delegate" destination="vXZ-lx-hvc" id="Ls8-BN-yEs"/>
@@ -41,10 +44,24 @@
                                     <constraint firstAttribute="width" constant="111" id="B2C-hN-XV9"/>
                                 </constraints>
                             </view>
+                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="nvi-Tw-Tg4">
+                                <rect key="frame" x="78" y="407" width="239" height="29"/>
+                                <segments>
+                                    <segment title="Hue"/>
+                                    <segment title="Brightness"/>
+                                    <segment title="Saturation"/>
+                                </segments>
+                                <connections>
+                                    <action selector="typeChanged:" destination="vXZ-lx-hvc" eventType="valueChanged" id="TGM-Mr-Jst"/>
+                                </connections>
+                            </segmentedControl>
                         </subviews>
                         <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
+                            <constraint firstItem="nvi-Tw-Tg4" firstAttribute="leading" secondItem="hQc-Sb-dFq" secondAttribute="leading" id="REd-9I-zGq"/>
                             <constraint firstItem="hQc-Sb-dFq" firstAttribute="top" secondItem="jyV-Pf-zRb" secondAttribute="bottom" constant="195" id="ZjY-y1-qBm"/>
+                            <constraint firstItem="nvi-Tw-Tg4" firstAttribute="trailing" secondItem="vn2-s0-T3V" secondAttribute="trailing" id="daB-BD-3f8"/>
+                            <constraint firstItem="nvi-Tw-Tg4" firstAttribute="top" secondItem="vn2-s0-T3V" secondAttribute="bottom" constant="26" id="gT2-Z1-YGY"/>
                             <constraint firstItem="vn2-s0-T3V" firstAttribute="top" secondItem="jyV-Pf-zRb" secondAttribute="bottom" constant="176" id="gh9-Ci-Yf5"/>
                             <constraint firstItem="hQc-Sb-dFq" firstAttribute="leading" secondItem="kh9-bI-dsS" secondAttribute="leadingMargin" constant="62" id="xnc-2Q-549"/>
                             <constraint firstItem="vn2-s0-T3V" firstAttribute="leading" secondItem="kh9-bI-dsS" secondAttribute="leadingMargin" constant="190" id="yAu-Di-dIP"/>
