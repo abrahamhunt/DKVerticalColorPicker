@@ -29,6 +29,8 @@
 
 @property (nonatomic) CGFloat currentSelectionY;
 @property (nonatomic) CGFloat lastHueSelection;
+@property (nonatomic) CGFloat lastBrightnessSelection;
+@property (nonatomic) CGFloat lastSaturationSelection;
 
 @end
 
@@ -55,6 +57,8 @@
 
 - (void)commonInit {
     _currentSelectionY = 0.0;
+    _lastBrightnessSelection = 1.0;
+    _lastSaturationSelection = 1.0;
     self.backgroundColor = [UIColor clearColor];
 }
 
@@ -86,35 +90,40 @@
 /*!
  Changes the selected color, updates the UI, and notifies the delegate.
  */
-- (void)setSelectedColor:(UIColor *)selectedColor
-{
-    if (selectedColor != _selectedColor) {
-        [self setCurrentSelectionYFromColor:selectedColor];
-        _selectedColor = selectedColor;
-        [self notifyDelegateOfColor:_selectedColor];
+- (void)setSelectedColor:(UIColor *)selectedColor {
+    if (selectedColor == _selectedColor) {
+        return;
     }
+    [self setCurrentSelectionYFromColor:selectedColor];
+    [self setNeedsDisplay];
+    _selectedColor = selectedColor;
+    [self notifyDelegateOfColor:_selectedColor];
 }
 
-- (void)setCurrentSelectionYFromColor:selectedColor {
+- (void)setCurrentSelectionYFromColor:(UIColor *)selectedColor {
     CGFloat hue = 0.0, sat = 0.0, bright = 0.0, temp = 0.0;
     if (![selectedColor getHue:&hue saturation:&sat brightness:&bright alpha:&temp]) {
         return;
     }
     CGFloat forCalc;
     switch (self.pickerType) {
-        case PickerTypeHue:
+        case PickerTypeHueIndependent:
+        case PickerTypeHueInterdependent:
             forCalc = hue;
+            self.lastHueSelection = forCalc;
             break;
-        case PickerTypeBrightness:
+        case PickerTypeBrightnessIndependent:
+        case PickerTypeBrightnessInterdependent:
             forCalc = bright;
+            self.lastBrightnessSelection = forCalc;
             break;
-        case PickerTypeSaturation:
+        case PickerTypeSaturationBasedOnHue:
+        case PickerTypeSaturationInterdependent:
             forCalc = sat;
+            self.lastSaturationSelection = forCalc;
             break;
     }
     _currentSelectionY = floorf(forCalc * self.frame.size.height);
-    [self adjustHueSelectionAsNeeded];
-    [self setNeedsDisplay];
 }
 
 - (void)setCurrentSelectionY:(CGFloat)currentSelectionY {
@@ -122,7 +131,7 @@
         return;
     }
     _currentSelectionY = currentSelectionY;
-    [self adjustHueSelectionAsNeeded];
+    [self adjustValueSelection];
     _selectedColor = [self colorFromY:currentSelectionY];
     [self notifyDelegateOfColor:self.selectedColor];
     [self setNeedsDisplay];
@@ -132,41 +141,61 @@
     if (pickerType == _pickerType) {
         return;
     }
+    PickerType previousType = _pickerType;
     _pickerType = pickerType;
-    _selectedColor = [self colorFromY:self.currentSelectionY];
+    if (pickerType >= PickerTypeHueInterdependent && previousType >= PickerTypeHueInterdependent) {
+        [self setCurrentSelectionYFromColor:self.selectedColor];
+    } else {
+        //color shouldn't change, but we should adjust the current selection according to type...
+        _selectedColor = [self colorFromY:self.currentSelectionY];
+        [self adjustValueSelection];
+    }
     [self notifyDelegateOfColor:self.selectedColor];
     [self setNeedsDisplay];
 }
 
-- (void)adjustHueSelectionAsNeeded {
-    if (self.pickerType == PickerTypeHue) {
-        self.lastHueSelection = self.currentSelectionY / self.frame.size.height;
+- (NSString *)keyForPickerType:(PickerType)type {
+    switch (type) {
+        case PickerTypeHueIndependent:
+        case PickerTypeHueInterdependent:
+            return @"lastHueSelection";
+        case PickerTypeBrightnessIndependent:
+        case PickerTypeBrightnessInterdependent:
+            return @"lastBrightnessSelection";
+        case PickerTypeSaturationBasedOnHue:
+        case PickerTypeSaturationInterdependent:
+            return @"lastSaturationSelection";
     }
+}
+
+- (void)adjustValueSelection {
+    CGFloat value = self.currentSelectionY / self.frame.size.height;
+    [self setValue:@(value) forKey:[self keyForPickerType:self.pickerType]];
 }
 
 #pragma mark - Touch Events
 
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-{
-    self.currentSelectionY = [((UITouch *)[touches anyObject]) locationInView:self].y;
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
+    [self setYWithTouches:touches];
 }
 
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
-{
-    self.currentSelectionY = [((UITouch *)[touches anyObject]) locationInView:self].y;
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
+    [self setYWithTouches:touches];
 }
 
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
-{
-    self.currentSelectionY = [((UITouch *)[touches anyObject]) locationInView:self].y;
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
+    [self setYWithTouches:touches];
 }
 
-- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
-{
+- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
     
 }
 
 #pragma mark - Helpers
+
+- (void)setYWithTouches:(NSSet *)touches {
+    self.currentSelectionY = [((UITouch *)[touches anyObject]) locationInView:self].y;
+}
 
 - (UIColor *)colorFromY:(CGFloat)y {
     return [self colorFromValue:y/self.frame.size.height andType:self.pickerType];
@@ -174,12 +203,18 @@
 
 - (UIColor *)colorFromValue:(CGFloat)value andType:(PickerType)type {
     switch (type) {
-        case PickerTypeBrightness:
-            return [UIColor colorWithHue:1.0 saturation:0 brightness:value alpha:1.0];
-        case PickerTypeHue:
+        case PickerTypeHueIndependent:
             return [UIColor colorWithHue:value saturation:1.0 brightness:1.0 alpha:1.0];
-        case PickerTypeSaturation:
+        case PickerTypeSaturationBasedOnHue:
             return [UIColor colorWithHue:self.lastHueSelection saturation:value brightness:1.0 alpha:1.0];
+        case PickerTypeBrightnessIndependent:
+            return [UIColor colorWithHue:1.0 saturation:0 brightness:value alpha:1.0];
+        case PickerTypeHueInterdependent:
+            return [UIColor colorWithHue:value saturation:self.lastSaturationSelection brightness:self.lastBrightnessSelection alpha:1.0];
+        case PickerTypeSaturationInterdependent:
+            return [UIColor colorWithHue:self.lastHueSelection saturation:value brightness:self.lastBrightnessSelection alpha:1.0];
+        case PickerTypeBrightnessInterdependent:
+            return [UIColor colorWithHue:self.lastHueSelection saturation:self.lastSaturationSelection brightness:value alpha:1.0];
     }
 }
 

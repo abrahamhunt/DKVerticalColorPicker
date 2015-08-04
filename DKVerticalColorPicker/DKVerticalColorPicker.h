@@ -26,9 +26,12 @@ SOFTWARE.
 #import <UIKit/UIKit.h>
 
 typedef NS_ENUM(NSUInteger, PickerType) {
-    PickerTypeHue           =   0,
-    PickerTypeBrightness    =   1,
-    PickerTypeSaturation    =   2
+    PickerTypeHueIndependent            =   0,
+    PickerTypeSaturationBasedOnHue      =   1,
+    PickerTypeBrightnessIndependent     =   2,
+    PickerTypeHueInterdependent         =   3,
+    PickerTypeSaturationInterdependent  =   4,
+    PickerTypeBrightnessInterdependent  =   5
 };
 
 /*!
