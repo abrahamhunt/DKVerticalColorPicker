@@ -25,6 +25,15 @@ SOFTWARE.
  
 #import <UIKit/UIKit.h>
 
+typedef NS_ENUM(NSUInteger, PickerType) {
+    PickerTypeHueIndependent            =   0,
+    PickerTypeSaturationBasedOnHue      =   1,
+    PickerTypeBrightnessIndependent     =   2,
+    PickerTypeHueInterdependent         =   3,
+    PickerTypeSaturationInterdependent  =   4,
+    PickerTypeBrightnessInterdependent  =   5
+};
+
 /*!
  A delegate that gets notifications when the color picked changes.
  */
@@ -39,5 +48,6 @@ IB_DESIGNABLE
 
 @property (nonatomic, weak) IBOutlet id<DKVerticalColorPickerDelegate> delegate;  //set after inited
 @property (nonatomic) IBInspectable UIColor *selectedColor;  //setting this will update the UI & notify the delegate
+@property (nonatomic) IBInspectable PickerType pickerType;
 
 @end
