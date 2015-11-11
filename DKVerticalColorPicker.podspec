@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'DKVerticalColorPicker'
-  s.version          = '1.0'
+  s.version          = '1.1.0'
   s.license          = 'MIT'
   s.summary          = 'A simple iOS color picker presented as a vertical hue bar. '
   s.homepage         = 'https://github.com/davecom/DKVerticalColorPicker'
