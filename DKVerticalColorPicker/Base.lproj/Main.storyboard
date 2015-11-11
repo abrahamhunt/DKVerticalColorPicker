@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="7706" systemVersion="14E46" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="vXZ-lx-hvc">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="7706" systemVersion="14F27" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="vXZ-lx-hvc">
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7703"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
@@ -18,11 +18,10 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hQc-Sb-dFq" customClass="DKVerticalColorPicker">
-                                <rect key="frame" x="78" y="215" width="49" height="147"/>
+                                <rect key="frame" x="41" y="120" width="518" height="20"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="49" id="5Fy-MH-QL2"/>
-                                    <constraint firstAttribute="height" constant="147" id="Fvn-UT-YV1"/>
+                                    <constraint firstAttribute="height" constant="20" id="5rT-IP-Ac5"/>
                                 </constraints>
                                 <userDefinedRuntimeAttributes>
                                     <userDefinedRuntimeAttribute type="color" keyPath="selectedColor">
@@ -31,36 +30,51 @@
                                     <userDefinedRuntimeAttribute type="number" keyPath="pickerType">
                                         <integer key="value" value="0"/>
                                     </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="verticalPicker" value="NO"/>
                                 </userDefinedRuntimeAttributes>
                                 <connections>
                                     <outlet property="delegate" destination="vXZ-lx-hvc" id="Ls8-BN-yEs"/>
                                 </connections>
                             </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vn2-s0-T3V">
+                            <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="vn2-s0-T3V">
                                 <rect key="frame" x="206" y="196" width="111" height="185"/>
                                 <color key="backgroundColor" name="alternateSelectedControlColor" catalog="System" colorSpace="catalog"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="185" id="2l7-dd-YRy"/>
-                                    <constraint firstAttribute="width" constant="111" id="B2C-hN-XV9"/>
-                                </constraints>
                             </view>
-                            <pickerView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="BeP-Xm-Nga">
+                            <pickerView contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="BeP-Xm-Nga">
                                 <rect key="frame" x="0.0" y="438" width="600" height="162"/>
                                 <connections>
                                     <outlet property="dataSource" destination="vXZ-lx-hvc" id="NWy-LN-faa"/>
                                     <outlet property="delegate" destination="vXZ-lx-hvc" id="904-jW-jSb"/>
                                 </connections>
                             </pickerView>
+                            <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="WGb-1y-ciK" customClass="DKVerticalColorPicker">
+                                <rect key="frame" x="129" y="164" width="44" height="228"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="100" id="WuR-yd-ald"/>
+                                    <constraint firstAttribute="width" constant="20" id="un1-oc-VmM"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="color" keyPath="selectedColor">
+                                        <color key="value" name="alternateSelectedControlColor" catalog="System" colorSpace="catalog"/>
+                                    </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="pickerType">
+                                        <integer key="value" value="0"/>
+                                    </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="verticalPicker" value="YES"/>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <outlet property="delegate" destination="vXZ-lx-hvc" id="FDE-Um-uOb"/>
+                                </connections>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstAttribute="trailing" secondItem="BeP-Xm-Nga" secondAttribute="trailing" id="56A-ru-yfq"/>
-                            <constraint firstItem="hQc-Sb-dFq" firstAttribute="top" secondItem="jyV-Pf-zRb" secondAttribute="bottom" constant="195" id="ZjY-y1-qBm"/>
-                            <constraint firstItem="BeP-Xm-Nga" firstAttribute="leading" secondItem="kh9-bI-dsS" secondAttribute="leading" id="d8t-nh-Rpu"/>
-                            <constraint firstItem="vn2-s0-T3V" firstAttribute="top" secondItem="jyV-Pf-zRb" secondAttribute="bottom" constant="176" id="gh9-Ci-Yf5"/>
-                            <constraint firstItem="2fi-mo-0CV" firstAttribute="top" secondItem="BeP-Xm-Nga" secondAttribute="bottom" id="jZT-Iz-YSF"/>
-                            <constraint firstItem="hQc-Sb-dFq" firstAttribute="leading" secondItem="kh9-bI-dsS" secondAttribute="leadingMargin" constant="62" id="xnc-2Q-549"/>
-                            <constraint firstItem="vn2-s0-T3V" firstAttribute="leading" secondItem="kh9-bI-dsS" secondAttribute="leadingMargin" constant="190" id="yAu-Di-dIP"/>
+                            <constraint firstItem="hQc-Sb-dFq" firstAttribute="top" secondItem="jyV-Pf-zRb" secondAttribute="bottom" constant="100" id="5uC-D5-Tnb"/>
+                            <constraint firstItem="hQc-Sb-dFq" firstAttribute="leading" secondItem="kh9-bI-dsS" secondAttribute="leadingMargin" constant="25" id="CiC-DC-FjB"/>
+                            <constraint firstItem="WGb-1y-ciK" firstAttribute="leading" secondItem="kh9-bI-dsS" secondAttribute="leadingMargin" constant="113" id="Ncn-CX-W63"/>
+                            <constraint firstItem="WGb-1y-ciK" firstAttribute="top" secondItem="hQc-Sb-dFq" secondAttribute="bottom" constant="24" id="tmm-tt-hGZ"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="hQc-Sb-dFq" secondAttribute="trailing" constant="25" id="xII-7O-FAb"/>
                         </constraints>
                     </view>
                     <connections>
@@ -71,6 +85,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="-17" y="454"/>
         </scene>
     </scenes>
 </document>
