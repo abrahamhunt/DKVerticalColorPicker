@@ -25,9 +25,14 @@
 
 #import "DKVerticalColorPicker.h"
 
+#define kGrabBarThickness 6.0f
+#define kGrabBarRounding kGrabBarThickness / 2.0f
+#define kGrabBarOutlineThickness 1.0f
+#define kColorBarRounding 4
+
 @interface DKVerticalColorPicker ()
 
-@property (nonatomic) CGFloat currentSelectionY;
+@property (nonatomic) CGFloat currentSelection;
 @property (nonatomic) CGFloat lastHueSelection;
 @property (nonatomic) CGFloat lastBrightnessSelection;
 @property (nonatomic) CGFloat lastSaturationSelection;
@@ -56,7 +61,8 @@
 }
 
 - (void)commonInit {
-    _currentSelectionY = 0.0;
+    _verticalPicker = YES;
+    _currentSelection = 0.0;
     _lastBrightnessSelection = 1.0;
     _lastSaturationSelection = 1.0;
     self.backgroundColor = [UIColor clearColor];
@@ -65,26 +71,78 @@
 - (void)drawRect:(CGRect)rect {
     // Drawing code
     [super drawRect:rect];
-    
-    //draw wings
-    [[UIColor blackColor] set];
-    CGFloat tempYPlace = self.currentSelectionY;
-    if (tempYPlace < 0.0) {
-        tempYPlace = 0.0;
-    } else if (tempYPlace >= self.frame.size.height) {
-        tempYPlace = self.frame.size.height - 1.0;
+    [self drawGradient];
+    [self drawGrabBar];
+}
+
+- (void)drawGradient {
+    CGContextRef currentContext = UIGraphicsGetCurrentContext();
+    //draw gradient
+    CGFloat cbLocationBegin = self.verticalPicker ? self.frame.size.width : self.frame.size.height;
+    CGFloat cbThickness = cbLocationBegin;
+    cbLocationBegin *= 0.2;
+    cbThickness *= 0.6;
+    CGFloat cbTotalLength = self.verticalPicker ? self.frame.size.height : self.frame.size.width;
+    for (int xy = 0; xy < cbTotalLength; xy ++) {
+        [[self colorFromPosition:xy] setFill];
+        CGRect temp;
+        if (self.verticalPicker) {
+            temp = CGRectMake(cbLocationBegin, xy, cbThickness, 1.0);
+        } else {
+            temp = CGRectMake(xy, cbLocationBegin, 1.0, cbThickness);
+        }
+        if (xy < kColorBarRounding || cbTotalLength - xy <= kColorBarRounding) {
+            //To get a rounded gradient bar we draw rounded rects on the ends
+            if (self.verticalPicker) {
+                temp.size.height = kColorBarRounding * 2;
+            } else {
+                temp.size.width = kColorBarRounding * 2;
+            }
+            if (cbTotalLength - xy <= kColorBarRounding) {
+                if (self.verticalPicker) {
+                    temp.origin.y -= kColorBarRounding;
+                } else {
+                    temp.origin.x -= kColorBarRounding;
+                }
+                xy += kColorBarRounding;
+            }
+            CGMutablePathRef mutablePath = CGPathCreateMutable();
+            CGPathAddRoundedRect(mutablePath, NULL, temp, kColorBarRounding, kColorBarRounding);
+            CGContextAddPath(currentContext, mutablePath);
+            CGContextFillPath(currentContext);
+            CGPathRelease(mutablePath);
+        } else {
+            UIRectFill(temp);
+        }
     }
-    CGRect temp = CGRectMake(0.0, tempYPlace, self.frame.size.width, 1.0);
-    UIRectFill(temp);
-    
-    //draw central bar over it
-    CGFloat cbxbegin = self.frame.size.width * 0.2;
-    CGFloat cbwidth = self.frame.size.width * 0.6;
-    for (int y = 0; y < self.frame.size.height; y++) {
-        [[self colorFromY:y] set];
-        CGRect temp = CGRectMake(cbxbegin, y, cbwidth, 1.0);
-        UIRectFill(temp);
+}
+
+- (void)drawGrabBar {
+    CGContextRef currentContext = UIGraphicsGetCurrentContext();
+    CGFloat tempPlace = self.currentSelection;
+    if (tempPlace < 0.0) {
+        tempPlace = kGrabBarOutlineThickness/2.0;
+    } else if (self.verticalPicker && tempPlace >= self.frame.size.height - kGrabBarThickness) {
+        tempPlace = self.frame.size.height - kGrabBarThickness - kGrabBarOutlineThickness/2.0;
+    } else if (!self.verticalPicker && tempPlace >= self.frame.size.width - kGrabBarThickness) {
+        tempPlace = self.frame.size.width - kGrabBarThickness - kGrabBarOutlineThickness/2.0;
     }
+    CGRect temp;
+    if (self.verticalPicker) {
+        temp = CGRectMake(kGrabBarOutlineThickness/2.0, tempPlace, self.frame.size.width - kGrabBarOutlineThickness, kGrabBarThickness);
+    } else {
+        temp = CGRectMake(tempPlace, kGrabBarOutlineThickness/2.0, kGrabBarThickness, self.frame.size.height - kGrabBarOutlineThickness);
+    }
+    [[self colorFromPosition:self.currentSelection] setFill];
+    [[UIColor whiteColor] setStroke];
+    CGContextSetLineWidth(currentContext, kGrabBarOutlineThickness);
+    CGMutablePathRef mutablePath = CGPathCreateMutable();
+    CGPathAddRoundedRect(mutablePath, NULL, temp, kGrabBarRounding, kGrabBarRounding);
+    CGContextAddPath(currentContext, mutablePath);
+    CGContextFillPath(currentContext);
+    CGContextAddPath(currentContext, mutablePath);
+    CGContextStrokePath(currentContext);
+    CGPathRelease(mutablePath);
 }
 
 /*!
@@ -94,13 +152,13 @@
     if (selectedColor == _selectedColor) {
         return;
     }
-    [self setCurrentSelectionYFromColor:selectedColor];
+    [self setCurrentSelectionFromColor:selectedColor];
     [self setNeedsDisplay];
     _selectedColor = selectedColor;
     [self notifyDelegateOfColor:_selectedColor];
 }
 
-- (void)setCurrentSelectionYFromColor:(UIColor *)selectedColor {
+- (void)setCurrentSelectionFromColor:(UIColor *)selectedColor {
     CGFloat hue = 0.0, sat = 0.0, bright = 0.0, temp = 0.0;
     if (![selectedColor getHue:&hue saturation:&sat brightness:&bright alpha:&temp]) {
         return;
@@ -123,16 +181,20 @@
             self.lastSaturationSelection = forCalc;
             break;
     }
-    _currentSelectionY = floorf(forCalc * self.frame.size.height);
+    if (self.verticalPicker) {
+        _currentSelection = floorf(forCalc * self.frame.size.height);
+    } else {
+        _currentSelection = floorf(forCalc * self.frame.size.width);
+    }
 }
 
-- (void)setCurrentSelectionY:(CGFloat)currentSelectionY {
-    if (currentSelectionY == _currentSelectionY) {
+- (void)setCurrentSelection:(CGFloat)currentSelection {
+    if (currentSelection == _currentSelection) {
         return;
     }
-    _currentSelectionY = currentSelectionY;
+    _currentSelection = currentSelection;
     [self adjustValueSelection];
-    _selectedColor = [self colorFromY:currentSelectionY];
+    _selectedColor = [self colorFromPosition:currentSelection];
     [self notifyDelegateOfColor:self.selectedColor];
     [self setNeedsDisplay];
 }
@@ -144,10 +206,10 @@
     PickerType previousType = _pickerType;
     _pickerType = pickerType;
     if (pickerType >= PickerTypeHueInterdependent && previousType >= PickerTypeHueInterdependent) {
-        [self setCurrentSelectionYFromColor:self.selectedColor];
+        [self setCurrentSelectionFromColor:self.selectedColor];
     } else {
         //color shouldn't change, but we should adjust the current selection according to type...
-        _selectedColor = [self colorFromY:self.currentSelectionY];
+        _selectedColor = [self colorFromPosition:self.currentSelection];
         [self adjustValueSelection];
     }
     [self notifyDelegateOfColor:self.selectedColor];
@@ -169,22 +231,27 @@
 }
 
 - (void)adjustValueSelection {
-    CGFloat value = self.currentSelectionY / self.frame.size.height;
+    CGFloat value;
+    if (self.verticalPicker) {
+        value = self.currentSelection / self.frame.size.height;
+    } else {
+        value = self.currentSelection / self.frame.size.width;
+    }
     [self setValue:@(value) forKey:[self keyForPickerType:self.pickerType]];
 }
 
 #pragma mark - Touch Events
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
-    [self setYWithTouches:touches];
+    [self setSelectionWithTouches:touches];
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
-    [self setYWithTouches:touches];
+    [self setSelectionWithTouches:touches];
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
-    [self setYWithTouches:touches];
+    [self setSelectionWithTouches:touches];
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
@@ -193,12 +260,19 @@
 
 #pragma mark - Helpers
 
-- (void)setYWithTouches:(NSSet *)touches {
-    self.currentSelectionY = [((UITouch *)[touches anyObject]) locationInView:self].y;
+- (void)setSelectionWithTouches:(NSSet *)touches {
+    if (self.verticalPicker) {
+        self.currentSelection = [((UITouch *)[touches anyObject]) locationInView:self].y;
+    } else {
+        self.currentSelection = [((UITouch *)[touches anyObject]) locationInView:self].x;
+    }
 }
 
-- (UIColor *)colorFromY:(CGFloat)y {
-    return [self colorFromValue:y/self.frame.size.height andType:self.pickerType];
+- (UIColor *)colorFromPosition:(CGFloat)position {
+    if (self.verticalPicker) {
+        return [self colorFromValue:position/self.frame.size.height andType:self.pickerType];
+    }
+    return [self colorFromValue:position/self.frame.size.width andType:self.pickerType];
 }
 
 - (UIColor *)colorFromValue:(CGFloat)value andType:(PickerType)type {
